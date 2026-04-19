@@ -2,6 +2,7 @@
 /app/dist
 /app/node_modules
 /app/build
+app/.angular
 
 # Logs
 logs

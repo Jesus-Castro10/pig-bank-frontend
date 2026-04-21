@@ -1,8 +1,26 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
+import { LoginComponent } from './pages/login-component/login-component';
+import { RegisterComponent } from './pages/register-component/register-component';
+import { AuthGuard } from './core/guards/auth.guard';
+import { HomeComponent } from './pages/home.component/home.component';
+import { CatalogComponent } from './pages/catalogo.component/catalogo.component';
 
 const routes: Routes = [
-  // tus rutas aquí
+  { path: 'login', component: LoginComponent },
+  { path: 'register', component: RegisterComponent },
+  {
+    path: 'dashboard',
+    canActivate: [AuthGuard],
+    children: [
+      { path: 'home', component: HomeComponent },
+      { path: 'catalog', component: CatalogComponent },
+      // { path: 'cards', component: CardComponent },
+      // { path: 'transactions', component: TransactionsComponent },
+      { path: '', redirectTo: 'home', pathMatch: 'full' }
+    ]
+  },
+  { path: '', redirectTo: 'login', pathMatch: 'full' },
 ];
 
 @NgModule({

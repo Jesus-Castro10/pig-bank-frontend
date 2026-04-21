@@ -1,0 +1,35 @@
+<!-- src/app/shared/sidebar/sidebar.component.html -->
+<div class="sidebar-container">
+  <!-- Mobile Toggle Button -->
+  <button class="mobile-toggle" (click)="toggleSidebar()" *ngIf="isMobile">
+    ☰
+  </button>
+
+  <!-- Sidebar -->
+  <div class="sidebar" [class.open]="isOpen" [class.mobile]="isMobile">
+    <div class="sidebar-header">
+      <h2>FintechApp</h2>
+      <button class="close-btn" (click)="toggleSidebar()" *ngIf="isMobile">✕</button>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a *ngFor="let item of menuItems"
+         [routerLink]="item.path"
+         routerLinkActive="active"
+         (click)="isMobile && toggleSidebar()">
+        <span class="icon">{{ item.icon }}</span>
+        <span class="label">{{ item.label }}</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <button class="logout-btn" (click)="logout()">
+        <span class="icon">🚪</span>
+        <span class="label">Cerrar Sesión</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Overlay for mobile -->
+  <div class="overlay" *ngIf="isMobile && isOpen" (click)="toggleSidebar()"></div>
+</div>

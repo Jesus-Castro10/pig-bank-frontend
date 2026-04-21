@@ -1,0 +1,139 @@
+/* src/app/dashboard/catalog/catalog.component.css */
+.catalog-container {
+  padding: 24px;
+  background: #F8FAFC;
+  min-height: 100vh;
+}
+
+.catalog-title {
+  color: #0F172A;
+  font-size: 28px;
+  margin-bottom: 24px;
+}
+
+.loading-spinner {
+  text-align: center;
+  padding: 40px;
+  color: #64748B;
+  font-size: 16px;
+}
+
+.services-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 24px;
+}
+
+.service-card {
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.service-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+}
+
+.service-header {
+  padding: 16px;
+  background: #F1F5F9;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.service-category {
+  font-size: 14px;
+  font-weight: 600;
+  color: #F97316;
+  text-transform: uppercase;
+}
+
+.service-status {
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.service-status.active {
+  background: #D1FAE5;
+  color: #059669;
+}
+
+.service-body {
+  padding: 20px;
+}
+
+.service-name {
+  color: #0F172A;
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.service-provider {
+  color: #64748B;
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+.service-plan {
+  color: #334155;
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 12px;
+}
+
+.service-details {
+  color: #64748B;
+  font-size: 13px;
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #E2E8F0;
+}
+
+.service-price {
+  font-size: 24px;
+  font-weight: 700;
+  color: #0F172A;
+}
+
+.service-footer {
+  padding: 16px 20px 20px;
+}
+
+.btn-pay {
+  width: 100%;
+  background: #F97316;
+  color: white;
+  border: none;
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.btn-pay:hover:not(:disabled) {
+  background: #EA580C;
+}
+
+.btn-pay:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+  .catalog-container {
+    padding: 16px;
+  }
+
+  .services-grid {
+    grid-template-columns: 1fr;
+  }
+}

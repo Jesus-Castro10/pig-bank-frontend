@@ -2,35 +2,41 @@
 <div class="catalog-container">
   <h1 class="catalog-title">Catálogo de Servicios</h1>
 
-  <div *ngIf="loading" class="loading-spinner">
-    Cargando servicios...
-  </div>
+  <div class="services-grid">
+    @if (catalogItems$ | async; as catalogItems) {
+      @if (catalogItems.length === 0) {
+        <p class="no-services">No hay servicios disponibles en este momento.</p>
+      }
+      @for (service of catalogItems; track $index) {
+        <div class="service-card">
+          <div class="service-header">
+            <div class="service-category">{{ service.categoria }}</div>
+            <div class="service-status" [class.active]="service.estado === 'Activo'">
+              {{ service.estado }}
+            </div>
+          </div>
 
-  <div class="services-grid" *ngIf="!loading">
-    <div *ngFor="let service of services" class="service-card">
-      <div class="service-header">
-        <div class="service-category">{{ service.categoria }}</div>
-        <div class="service-status" [class.active]="service.estado === 'Activo'">
-          {{ service.estado }}
+          <div class="service-body">
+            <h3 class="service-name">{{ service.servicio }}</h3>
+            <div class="service-provider">{{ service.proveedor }}</div>
+            <div class="service-plan">Plan {{ service.plan }}</div>
+            <div class="service-details">{{ service.detalles }}</div>
+            <div class="service-price">${{ service.precio_mensual }}</div>
+          </div>
+
+          <div class="service-footer">
+            <button
+              class="btn-pay"
+              (click)="payService(service)"
+              [disabled]="payingServiceId === service.id"
+            >
+              {{ payingServiceId === service.id ? 'Procesando...' : 'Pagar Factura' }}
+            </button>
+          </div>
         </div>
-      </div>
-
-      <div class="service-body">
-        <h3 class="service-name">{{ service.servicio }}</h3>
-        <div class="service-provider">{{ service.proveedor }}</div>
-        <div class="service-plan">Plan {{ service.plan }}</div>
-        <div class="service-details">{{ service.detalles }}</div>
-        <div class="service-price">${{ service.precio_mensual }}</div>
-      </div>
-
-      <div class="service-footer">
-        <button
-          class="btn-pay"
-          (click)="payService(service)"
-          [disabled]="payingServiceId === service.id">
-          {{ payingServiceId === service.id ? 'Procesando...' : 'Pagar Factura' }}
-        </button>
-      </div>
-    </div>
+      }
+    } @else {
+      <p class="loading">Cargando servicios...</p>
+    }
   </div>
 </div>

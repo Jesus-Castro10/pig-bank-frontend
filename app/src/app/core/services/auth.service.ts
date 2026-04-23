@@ -10,10 +10,8 @@ import { environment } from '../../../environments/environment.prod';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private apiUrl = environment.apiUrl;
+  private apiUrl = environment.apiAuthUrl;
   private tokenKey = 'auth_token';
-  private currentUserSubject = new BehaviorSubject<User | null>(null);
-  currentUser$ = this.currentUserSubject.asObservable();
 
   constructor(private http: HttpClient) {
     this.loadUserFromToken();
@@ -35,7 +33,7 @@ export class AuthService {
 
   logout(): void {
     localStorage.removeItem(this.tokenKey);
-    this.currentUserSubject.next(null);
+    localStorage.removeItem('user_uuid');
   }
 
   getToken(): string | null {
@@ -51,18 +49,17 @@ export class AuthService {
     if (token) {
       try {
         const decoded: any = jwtDecode(token);
-        const user: User = {
-          id: decoded.userId,
-          email: decoded.email,
-          name: decoded.name,
-          lastName: decoded.lastName,
-          document: decoded.document
-        };
-        this.currentUserSubject.next(user);
+        const uuid = decoded.uuid;
+        localStorage.setItem('user_uuid', uuid);
       } catch (error) {
         console.error('Error decodificando token', error);
         this.logout();
       }
     }
+  }
+
+  getCurrentUser(): Observable<User> {
+    const uuid = localStorage.getItem('user_uuid');
+    return this.http.get<User>(`${this.apiUrl}/profile/${uuid}`);
   }
 }

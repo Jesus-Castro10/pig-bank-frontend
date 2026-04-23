@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { CatalogItem } from '../../model/catalog-item';
 import { ApiService } from '../../shared/services/api.service';
+import { NgxSpinnerService } from 'ngx-spinner';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-catalogo.component',
@@ -9,28 +11,21 @@ import { ApiService } from '../../shared/services/api.service';
   styleUrl: './catalogo.component.scss',
 })
 export class CatalogComponent implements OnInit {
-  catalogItems: CatalogItem[] = [];
-  loading = false;
+  catalogItems$!: Observable<CatalogItem[]>;
   payingServiceId: number | null = null;
 
-  constructor(private apiService: ApiService) {}
+  constructor(private apiService: ApiService,
+    private spinner: NgxSpinnerService
+  ) { }
 
-  ngOnInit(): void {
+  async ngOnInit() {
     this.loadCatalog();
   }
 
-  loadCatalog(): void {
-    this.loading = true;
-    this.apiService.getCatalog().subscribe({
-      next: (services) => {
-        this.catalogItems = services;
-        this.loading = false;
-      },
-      error: (err) => {
-        console.error('Error loading catalog:', err);
-        this.loading = false;
-      }
-    });
+  async loadCatalog() {
+    // await this.spinner.show();
+    this.catalogItems$ = this.apiService.getCatalog();
+
   }
 
   payService(catalogItem: CatalogItem): void {

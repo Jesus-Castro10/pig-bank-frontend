@@ -1,9 +1,11 @@
 export interface Card {
-   id: number;
+  uuid: number;
+  type: 'CREDIT' | 'DEBIT';
   cardNumber: string;
   cardHolder: string;
   expiryDate: string;
-  status: 'active' | 'inactive';
-  userId: number;
-  purchasesCount?: number;
+  balance: number;
+  status: 'ACTIVATED' | 'PENDING';
+  purchasesCount: number;      // Compras realizadas con débito
+  requiredPurchases: number;
 }

@@ -1,30 +1,32 @@
-// src/app/shared/services/api.service.ts
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { CatalogItem } from '../../model/catalog-item';
 import { Card } from '../../model/card';
 import { Transaction } from '../../model/transaction';
-import { environment } from '../../../environments/environment.prod';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ApiService {
-  private apiUrl = environment.apiUrl;
+  private apiAuthUrl = environment.apiAuthUrl;
+  private apiCardUrl = environment.apiCardUrl;
+  private apiCatalogUrl = environment.apiCatalogUrl;
 
   constructor(private http: HttpClient) {}
 
   getCatalog(): Observable<CatalogItem[]> {
-    return this.http.get<CatalogItem[]>(`${this.apiUrl}/catalog`);
+    return this.http.get<CatalogItem[]>(this.apiCatalogUrl);
   }
 
   getCards(): Observable<Card[]> {
-    return this.http.get<Card[]>(`${this.apiUrl}/cards`);
+    const userId = localStorage.getItem('user_uuid');
+    return this.http.get<Card[]>(`${this.apiCardUrl}/user?userId=${userId}`);
   }
 
   getTransactions(): Observable<Transaction[]> {
-    return this.http.get<Transaction[]>(`${this.apiUrl}/transactions`);
+    return this.http.get<Transaction[]>(`${this.apiAuthUrl}/transactions`);
   }
 
   createPayment(paymentData: any): Observable<any> {

@@ -5,6 +5,7 @@ import { RegisterComponent } from './pages/register-component/register-component
 import { AuthGuard } from './core/guards/auth.guard';
 import { HomeComponent } from './pages/home.component/home.component';
 import { CatalogComponent } from './pages/catalogo.component/catalogo.component';
+import { CardsComponent } from './pages/cards.component/cards.component';
 
 const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -15,7 +16,7 @@ const routes: Routes = [
     children: [
       { path: 'home', component: HomeComponent },
       { path: 'catalog', component: CatalogComponent },
-      // { path: 'cards', component: CardComponent },
+      { path: 'cards', component: CardsComponent },
       // { path: 'transactions', component: TransactionsComponent },
       { path: '', redirectTo: 'home', pathMatch: 'full' }
     ]

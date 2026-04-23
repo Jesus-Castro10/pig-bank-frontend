@@ -1,3 +1,4 @@
+<ngx-spinner bdColor = "rgba(0, 0, 0, 0.8)" size = "medium" color = "#fff" type = "pacman" [fullScreen] = "true"><p style="color: white" > Loading... </p></ngx-spinner>
 <div class="app-container">
   <app-sidebar *ngIf="authService.isLoggedIn()"></app-sidebar>
   <div class="main-content" [class.with-sidebar]="authService.isLoggedIn()">

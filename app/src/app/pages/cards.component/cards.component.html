@@ -1,0 +1,209 @@
+<!-- src/app/dashboard/cards/cards.component.html -->
+<div class="cards-container">
+  <div class="cards-header">
+    <h1 class="cards-title">💳 Mis Tarjetas</h1>
+    <p class="cards-subtitle">Toca una tarjeta para recargarla o pagarla según su tipo.</p>
+  </div>
+
+  <div *ngIf="loading" class="loading-spinner">
+    <div class="spinner"></div>
+    <p>Cargando tus tarjetas...</p>
+  </div>
+
+  <div class="cards-list" *ngIf="!loading">
+    <!-- Tarjeta de Crédito -->
+    <div class="card-row" [class.PENDING]="creditCard?.status === 'PENDING'">
+      <div class="card-physical" [class.PENDING]="creditCard?.status === 'PENDING'" (click)="onCardTap(creditCard!)">
+        <div class="card-bg"></div>
+        <div class="card-content">
+          <div class="card-type-badge">
+            <span class="type-icon">{{ getCardTypeIcon('CREDIT') }}</span>
+            <span class="type-name">Crédito</span>
+          </div>
+          <div class="card-number">{{ creditCard?.cardNumber }}</div>
+          <div class="card-footer">
+            <div class="card-holder">{{ creditCard?.cardHolder }}</div>
+            <div class="card-expiry">{{ creditCard?.expiryDate }}</div>
+          </div>
+          <div class="card-status" *ngIf="creditCard?.status === 'PENDING'">Pendiente</div>
+          <div class="card-status ACTIVATED" *ngIf="creditCard?.status === 'ACTIVATED'">Activa</div>
+        </div>
+      </div>
+
+      <div class="card-info">
+        <div class="info-title">Requiere 10 compras con débito para activar</div>
+        <div class="progress-container">
+          <div class="progress-bar">
+            <div class="progress-fill" [style.width.%]="getProgressPercent(creditCard!)"></div>
+          </div>
+          <div class="progress-text">{{ creditCard?.purchasesCount }}/{{ creditCard?.requiredPurchases }}</div>
+        </div>
+        <div class="info-message">
+          Realiza {{ getRemainingPurchases(creditCard!) }} compras más con tu tarjeta de débito para desbloquear esta tarjeta de crédito.
+        </div>
+        <button class="btn-tap" (click)="onCardTap(creditCard!)">
+          👆 Toca para ver detalles
+        </button>
+      </div>
+    </div>
+
+    <!-- Tarjeta de Débito -->
+    <div class="card-row" [class.ACTIVATED]="debitCard?.status === 'ACTIVATED'">
+      <div class="card-physical DEBIT" [class.ACTIVATED]="debitCard?.status === 'ACTIVATED'" (click)="onCardTap(debitCard!)">
+        <div class="card-bg"></div>
+        <div class="card-content">
+          <div class="card-type-badge DEBIT">
+            <span class="type-icon">{{ getCardTypeIcon('DEBIT') }}</span>
+            <span class="type-name">Débito</span>
+          </div>
+          <div class="card-number">{{ debitCard?.cardNumber }}</div>
+          <div class="card-footer">
+            <div class="card-holder">{{ debitCard?.cardHolder }}</div>
+            <div class="card-expiry">{{ debitCard?.expiryDate }}</div>
+          </div>
+          <div class="card-balance">${{ debitCard?.balance?.toLocaleString() }}</div>
+          <div class="card-status ACTIVATED" *ngIf="debitCard?.status === 'ACTIVATED'">Activa</div>
+        </div>
+      </div>
+
+      <div class="card-info">
+        <div class="info-title">💳 Tarjeta activa</div>
+        <div class="balance-display">
+          <span class="balance-label">Saldo disponible:</span>
+          <span class="balance-amount">${{ debitCard?.balance?.toLocaleString() }}</span>
+        </div>
+        <div class="compras-count">
+          Compras realizadas: {{ debitCard?.purchasesCount }}/{{ debitCard?.requiredPurchases }}
+        </div>
+        <div class="action-buttons">
+          <button class="btn-reload" (click)="reloadCard()">
+            💰 Recargar saldo
+          </button>
+          <button class="btn-pay" (click)="payWithCard()">
+            💸 Pagar servicio
+          </button>
+        </div>
+        <div class="tap-hint">
+          👆 Toca la tarjeta para más opciones
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Acción -->
+  <div class="modal-overlay" *ngIf="showActionModal" (click)="closeModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>
+          <span *ngIf="!actionType && selectedCard?.type === 'CREDIT' && selectedCard?.status === 'PENDING'">
+            🔒 Tarjeta de Crédito Bloqueada
+          </span>
+          <span *ngIf="!actionType && selectedCard?.type === 'DEBIT' && selectedCard?.status === 'ACTIVATED'">
+            💳 Opciones de Débito
+          </span>
+          <span *ngIf="!actionType && selectedCard?.type === 'CREDIT' && selectedCard?.status === 'ACTIVATED'">
+            💎 Tarjeta de Crédito Activa
+          </span>
+          <span *ngIf="actionType === 'reload'">💰 Recargar Saldo</span>
+          <span *ngIf="actionType === 'pay'">💸 Realizar Pago</span>
+        </h2>
+        <button class="modal-close" (click)="closeModal()">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Caso: Tarjeta de crédito inactiva -->
+        <div *ngIf="!actionType && selectedCard?.type === 'CREDIT' && selectedCard?.status === 'PENDING'">
+          <div class="modal-icon">🔒</div>
+          <div class="modal-message">
+            <h3>Tarjeta de crédito no disponible</h3>
+            <p>Esta tarjeta aún no ha sido activada.</p>
+            <div class="progress-detail">
+              <div class="progress-label">Progreso de activación:</div>
+              <div class="progress-bar-modal">
+                <div class="progress-fill-modal" [style.width.%]="getProgressPercent(selectedCard!)"></div>
+              </div>
+              <div class="progress-numbers">{{ selectedCard?.purchasesCount }}/{{ selectedCard?.requiredPurchases }} compras</div>
+            </div>
+            <p class="requirement-text">
+              Realiza {{ getRemainingPurchases(selectedCard!) }} compras más con tu tarjeta de débito para desbloquear esta tarjeta.
+            </p>
+          </div>
+          <button class="btn-close-modal" (click)="closeModal()">Entendido</button>
+        </div>
+
+        <!-- Caso: Tarjeta de débito activa - menú principal -->
+        <div *ngIf="!actionType && selectedCard?.type === 'DEBIT' && selectedCard?.status === 'ACTIVATED'">
+          <div class="modal-icon">💳</div>
+          <div class="card-detail">
+            <div class="detail-number">{{ selectedCard?.cardNumber }}</div>
+            <div class="detail-balance">Saldo: ${{ selectedCard?.balance?.toLocaleString() }}</div>
+          </div>
+          <div class="modal-actions-grid">
+            <button class="modal-action-btn reload" (click)="reloadCard()">
+              <span class="btn-emoji">💰</span>
+              Recargar saldo
+            </button>
+            <button class="modal-action-btn pay" (click)="payWithCard()">
+              <span class="btn-emoji">💸</span>
+              Pagar servicio
+            </button>
+          </div>
+        </div>
+
+        <!-- Caso: Recargar saldo -->
+        <div *ngIf="actionType === 'reload'">
+          <div class="modal-icon">💰</div>
+          <div class="card-detail">
+            <div class="detail-type">Tarjeta de Débito</div>
+            <div class="detail-number">{{ selectedCard?.cardNumber }}</div>
+          </div>
+
+          <div class="reload-amounts">
+            <label>Monto a recargar</label>
+            <div class="amount-buttons">
+              <button
+                *ngFor="let amount of reloadAmounts"
+                class="amount-btn"
+                [class.selected]="selectedAmount === amount"
+                (click)="selectedAmount = amount">
+                ${{ amount.toLocaleString() }}
+              </button>
+            </div>
+            <input
+              type="number"
+              class="custom-amount"
+              [(ngModel)]="selectedAmount"
+              placeholder="Otro monto"
+              min="10000"
+              step="10000">
+          </div>
+
+          <div class="modal-actions">
+            <button class="btn-cancel" (click)="closeModal()">Cancelar</button>
+            <button class="btn-confirm" (click)="confirmReload()">
+              Confirmar recarga
+            </button>
+          </div>
+        </div>
+
+        <!-- Caso: Pagar servicio -->
+        <div *ngIf="actionType === 'pay'">
+          <div class="modal-icon">💸</div>
+          <div class="card-detail">
+            <div class="detail-type">{{ selectedCard?.type === 'CREDIT' ? 'Tarjeta de Crédito' : 'Tarjeta de Débito' }}</div>
+            <div class="detail-number">{{ selectedCard?.cardNumber }}</div>
+            <div class="detail-balance">Saldo disponible: ${{ selectedCard?.balance?.toLocaleString() }}</div>
+          </div>
+
+          <div class="modal-actions">
+            <button class="btn-cancel" (click)="closeModal()">Cancelar</button>
+            <button class="btn-confirm" (click)="confirmPayment()">
+              Continuar con el pago
+            </button>
+          </div>
+          <p class="payment-hint">💰 Se abrirá un cuadro para ingresar el monto exacto a pagar.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

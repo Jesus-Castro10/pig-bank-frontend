@@ -5,6 +5,7 @@ import { Transaction } from '../../model/transaction';
 import { Subscription } from 'rxjs';
 import { WebsocketMockService } from '../../shared/services/websocket-mock.service';
 import { AuthService } from '../../core/services/auth.service';
+import { NgxSpinnerService } from 'ngx-spinner';
 
 @Component({
   selector: 'app-home.component',
@@ -28,27 +29,30 @@ export class HomeComponent implements OnInit, OnDestroy {
   constructor(
     private apiService: ApiService,
     private wsMock: WebsocketMockService,
-    private authService: AuthService
+    private authService: AuthService,
+    private spinner: NgxSpinnerService
   ) {}
 
-  ngOnInit(): void {
-    this.loadCards();
-    this.loadTransactions();
-    this.listenToRealtimeUpdates();
+  async ngOnInit() {
+    await this.spinner.show();
+    await this.loadCards();
+    await this.loadTransactions();
+    await this.listenToRealtimeUpdates();
+    await this.spinner.hide();
   }
 
-  loadCards(): void {
+  async loadCards() {
     this.apiService.getCards().subscribe({
       next: (cards) => {
         this.cards = cards;
-        const mainCard = cards.find(c => c.status === 'active') || cards[0];
-        this.dashboardData.cardStatus = mainCard?.status || 'inactive';
+        const mainCard = cards.find(c => c.status === 'ACTIVATED') || cards[0];
+        this.dashboardData.cardStatus = mainCard?.status || 'PENDING';
       },
       error: (err) => console.error('Error loading cards:', err)
     });
   }
 
-  loadTransactions(): void {
+  async loadTransactions() {
     this.apiService.getTransactions().subscribe({
       next: (transactions) => {
         this.transactions = transactions;
@@ -67,7 +71,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     });
   }
 
-  listenToRealtimeUpdates(): void {
+  async listenToRealtimeUpdates() {
     this.lastTransactionUpdate = this.wsMock.transactionUpdates$.subscribe({
       next: (updatedTransaction) => {
         this.dashboardData.lastTransactionStatus = updatedTransaction.status;

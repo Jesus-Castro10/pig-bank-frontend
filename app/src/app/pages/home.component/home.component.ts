@@ -1,92 +1,71 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { ApiService } from '../../shared/services/api.service';
 import { Card } from '../../model/card';
 import { Transaction } from '../../model/transaction';
-import { Subscription } from 'rxjs';
 import { WebsocketMockService } from '../../shared/services/websocket-mock.service';
-import { AuthService } from '../../core/services/auth.service';
 import { NgxSpinnerService } from 'ngx-spinner';
+import { BehaviorSubject, combineLatest, merge, Observable, of } from 'rxjs';
+import { catchError, map, scan, shareReplay, switchMap, tap } from 'rxjs/operators';
 
 @Component({
-  selector: 'app-home.component',
+  selector: 'app-home',
   standalone: false,
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss',
 })
-export class HomeComponent implements OnInit, OnDestroy {
-  cards: Card[] = [];
-  transactions: Transaction[] = [];
-  lastTransactionUpdate: Subscription | null = null;
+export class HomeComponent {
+  cards$: Observable<Card[]>;
+  transactions$: Observable<Transaction[]>;
+  dashboardData$: Observable<any>;
 
-  dashboardData = {
-    balance: 150000,
-    cardStatus: 'inactive',
-    monthlyTransactions: 0,
-    monthlyTotal: 0,
-    lastTransactionStatus: ''
-  };
+  private refreshTrigger = new BehaviorSubject<void>(undefined);
 
   constructor(
     private apiService: ApiService,
     private wsMock: WebsocketMockService,
-    private authService: AuthService,
     private spinner: NgxSpinnerService
-  ) {}
+  ) {
 
-  async ngOnInit() {
-    await this.spinner.show();
-    await this.loadCards();
-    await this.loadTransactions();
-    await this.listenToRealtimeUpdates();
-    await this.spinner.hide();
-  }
+    this.cards$ = this.refreshTrigger.pipe(
+      tap(() => this.spinner.show()),
+      switchMap(() => this.apiService.getCards()),
+      tap(() => this.spinner.hide()),
+      shareReplay(1)
+    );
 
-  async loadCards() {
-    this.apiService.getCards().subscribe({
-      next: (cards) => {
-        this.cards = cards;
+    this.transactions$ = this.apiService.getTransactions().pipe(
+      switchMap(initial => merge(of(initial), this.wsMock.transactionUpdates$).pipe(
+        scan((acc: Transaction[], curr: Transaction | Transaction[]) => {
+          if (Array.isArray(curr)) return curr;
+          const index = acc.findIndex(t => t.id === curr.id);
+          if (index !== -1) {
+            acc[index] = curr;
+            return [...acc];
+          }
+          return [curr, ...acc];
+        }, []),
+        tap(list => this.wsMock.setLastTransaction(list[0]))
+      )),
+      shareReplay(1)
+    );
+
+    this.dashboardData$ = combineLatest([this.cards$, this.transactions$]).pipe(
+      map(([cards, transactions]) => {
         const mainCard = cards.find(c => c.status === 'ACTIVATED') || cards[0];
-        this.dashboardData.cardStatus = mainCard?.status || 'PENDING';
-      },
-      error: (err) => console.error('Error loading cards:', err)
-    });
-  }
-
-  async loadTransactions() {
-    this.apiService.getTransactions().subscribe({
-      next: (transactions) => {
-        this.transactions = transactions;
         const currentMonth = new Date().getMonth();
-        const monthlyTransactions = transactions.filter(t =>
-          new Date(t.date).getMonth() === currentMonth && t.status === 'completed'
+        const monthly = transactions.filter(t =>
+          new Date(t.timestamp).getMonth() === currentMonth && t.status === 'completed'
         );
-        this.dashboardData.monthlyTransactions = monthlyTransactions.length;
-        this.dashboardData.monthlyTotal = monthlyTransactions.reduce((sum, t) => sum + t.amount, 0);
 
-        if (transactions.length > 0) {
-          this.wsMock.setLastTransaction(transactions[0]);
-        }
-      },
-      error: (err) => console.error('Error loading transactions:', err)
-    });
-  }
-
-  async listenToRealtimeUpdates() {
-    this.lastTransactionUpdate = this.wsMock.transactionUpdates$.subscribe({
-      next: (updatedTransaction) => {
-        this.dashboardData.lastTransactionStatus = updatedTransaction.status;
-        // Actualizar la transacción en la lista local
-        const index = this.transactions.findIndex(t => t.id === updatedTransaction.id);
-        if (index !== -1) {
-          this.transactions[index] = updatedTransaction;
-        }
-      }
-    });
-  }
-
-  ngOnDestroy(): void {
-    if (this.lastTransactionUpdate) {
-      this.lastTransactionUpdate.unsubscribe();
-    }
+        return {
+          balance: mainCard?.balance || 0,
+          cardStatus: mainCard?.status || 'PENDING',
+          monthlyTransactions: monthly.length,
+          monthlyTotal: monthly.reduce((sum, t) => sum + (t.service?.precio_mensual || 0), 0),
+          lastTransactionStatus: transactions[0]?.status || ''
+        };
+      }),
+      catchError(() => of({ balance: 0, cardStatus: 'inactive', monthlyTransactions: 0, monthlyTotal: 0, lastTransactionStatus: '' }))
+    );
   }
 }

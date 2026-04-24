@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { map, Observable, switchMap } from 'rxjs';
 import { CatalogItem } from '../../model/catalog-item';
 import { Card } from '../../model/card';
 import { Transaction } from '../../model/transaction';
@@ -13,8 +13,9 @@ export class ApiService {
   private apiAuthUrl = environment.apiAuthUrl;
   private apiCardUrl = environment.apiCardUrl;
   private apiCatalogUrl = environment.apiCatalogUrl;
+  private apiPaymentUrl = environment.apiPaymentUrl;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   getCatalog(): Observable<CatalogItem[]> {
     return this.http.get<CatalogItem[]>(this.apiCatalogUrl);
@@ -22,21 +23,30 @@ export class ApiService {
 
   getCards(): Observable<Card[]> {
     const userId = localStorage.getItem('user_uuid');
-    return this.http.get<Card[]>(`${this.apiCardUrl}/user?userId=${userId}`);
+    return this.http.get<Card[]>(`${this.apiCardUrl}/card/user?userId=${userId}`);
   }
 
   getTransactions(): Observable<Transaction[]> {
-    return this.http.get<Transaction[]>(`${this.apiAuthUrl}/transactions`);
+    const userId = localStorage.getItem('user_uuid');
+    return this.http.get<Transaction[]>(`${this.apiPaymentUrl}/user/${userId}`);
   }
 
   createPayment(paymentData: any): Observable<any> {
-    // Endpoint de pago pendiente por ahora
-    console.log('Simulando envío de pago:', paymentData);
-    return new Observable(observer => {
-      setTimeout(() => {
-        observer.next({ success: true, message: 'Pago simulado', transactionId: Math.random() });
-        observer.complete();
-      }, 500);
-    });
+    return this.getCards().pipe(
+      map(cardList => {
+        const debitCard = cardList.find(c => c.type === 'DEBIT' && c.status === 'ACTIVATED');
+        return {
+          service: { ...paymentData },
+          cardId: debitCard?.uuid
+        };
+      }),
+      switchMap(body => {
+        return this.http.post(this.apiPaymentUrl, body);
+      })
+    );
+  }
+
+  reloadCard(cardId: string, amount: number): Observable<any> {
+    return this.http.post(`${this.apiCardUrl}/transactions/save/${cardId}`, { merchant: 'Saving', amount });
   }
 }

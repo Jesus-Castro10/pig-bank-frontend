@@ -1,35 +1,67 @@
-<!-- src/app/shared/sidebar/sidebar.component.html -->
 <div class="sidebar-container">
+
   <!-- Mobile Toggle Button -->
-  <button class="mobile-toggle" (click)="toggleSidebar()" *ngIf="isMobile">
-    ☰
-  </button>
+  @if (isMobile) {
+    <button class="mobile-toggle" (click)="toggleSidebar()">
+      <span class="material-icons">menu</span>
+    </button>
+  }
 
   <!-- Sidebar -->
   <div class="sidebar" [class.open]="isOpen" [class.mobile]="isMobile">
+
+    <!-- HEADER USER -->
     <div class="sidebar-header">
-      <h2>FintechApp</h2>
-      <button class="close-btn" (click)="toggleSidebar()" *ngIf="isMobile">✕</button>
+      <div class="user-info" (click)="toggleUserMenu()">
+        <img class="avatar" [src]="(user$ | async)?.image || 'assets/default-avatar.png'" alt="user">
+        <div class="user-text">
+          <span class="name">{{ (user$ | async)?.name }}</span>
+          <span class="email">{{ (user$ | async)?.email }}</span>
+        </div>
+        <span class="material-icons arrow">expand_more</span>
+      </div>
+
+      @if (isMobile) {
+        <button class="close-btn" (click)="toggleSidebar()">
+          <span class="material-icons">close</span>
+        </button>
+      }
     </div>
 
+    <!-- USER DROPDOWN -->
+    @if (isUserMenuOpen) {
+      <div class="user-menu">
+        <button  (click)="goToProfile()">
+          <span class="material-icons">person</span>
+          Actualizar perfil
+        </button>
+
+        <button class="logout-btn" (click)="logout()">
+          <span class="material-icons">logout</span>
+          Cerrar sesión
+        </button>
+      </div>
+    }
+
+    <!-- NAV -->
     <nav class="sidebar-nav">
-      <a *ngFor="let item of menuItems"
-         [routerLink]="item.path"
-         routerLinkActive="active"
-         (click)="isMobile && toggleSidebar()">
-        <span class="icon">{{ item.icon }}</span>
-        <span class="label">{{ item.label }}</span>
-      </a>
+      @for (item of menuItems; track item) {
+        <a
+          [routerLink]="item.path"
+          routerLinkActive="active"
+          (click)="isMobile && toggleSidebar()"
+        >
+          <span class="material-icons icon">{{ item.icon }}</span>
+          <span class="label">{{ item.label }}</span>
+        </a>
+      }
     </nav>
 
-    <div class="sidebar-footer">
-      <button class="logout-btn" (click)="logout()">
-        <span class="icon">🚪</span>
-        <span class="label">Cerrar Sesión</span>
-      </button>
-    </div>
   </div>
 
-  <!-- Overlay for mobile -->
-  <div class="overlay" *ngIf="isMobile && isOpen" (click)="toggleSidebar()"></div>
+  <!-- Overlay -->
+  @if (isMobile && isOpen) {
+    <div class="overlay" (click)="toggleSidebar()"></div>
+  }
+
 </div>

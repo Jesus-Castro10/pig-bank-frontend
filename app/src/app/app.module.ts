@@ -4,6 +4,7 @@ import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
 import { SharedModule } from './shared/shared.module';
 import { NgxSpinnerModule } from 'ngx-spinner';
+import { UserProfileComponent } from './pages/user-profile.component/user-profile.component';
 
 @NgModule({
   declarations: [AppComponent],

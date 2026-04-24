@@ -1,0 +1,101 @@
+<div class="profile-wrapper">
+  @if (isLoading) {
+    <div class="loader">
+      <div class="spinner"></div>
+    </div>
+  }
+
+  @if (!isLoading && user) {
+    <!-- HEADER -->
+    <div class="profile-header">
+      <div class="avatar-section">
+        <img [src]="previewImage || user.image || 'assets/default-avatar.png'" class="avatar" />
+
+        <label class="upload-btn">
+          <span class="material-icons">photo_camera</span>
+          <input type="file" (change)="onFileSelected($event)" hidden />
+        </label>
+      </div>
+
+      <div>
+        <h2>{{ user.name }} {{ user.lastName }}</h2>
+        <p>{{ user.email }}</p>
+      </div>
+    </div>
+
+    <!-- FORM -->
+    <form [formGroup]="form" (ngSubmit)="updateProfile()" class="profile-form">
+      <div class="grid">
+        <!-- NO EDITABLE -->
+        <div class="form-group">
+          <label>ID Usuario</label>
+          <input [value]="user.user_id" disabled />
+        </div>
+
+        <div class="form-group">
+          <label>Fecha creación</label>
+          <input [value]="user.createdAt | date: 'short'" disabled />
+        </div>
+
+        <div class="form-group">
+          <label>Documento</label>
+          <input [value]="user.document" disabled />
+        </div>
+
+        <div class="form-group">
+          <label>Email</label>
+          <input [value]="user.email" disabled />
+        </div>
+
+        <div class="form-group">
+          <label>Nombre</label>
+          <input [value]="user.name" disabled />
+        </div>
+
+        <div class="form-group">
+          <label>Apellido</label>
+          <input [value]="user.lastName" disabled />
+        </div>
+
+        <!-- EDITABLE -->
+        <div class="form-group">
+          <label>Dirección</label>
+          <input formControlName="address" />
+        </div>
+        @if (getField('address')?.touched && getField('address')?.invalid) {
+          <span class="error">
+            @if (getField('address')?.errors?.['required']) {
+              La dirección es obligatoria
+            }
+            @if (getField('address')?.errors?.['minlength']) {
+              Mínimo 5 caracteres
+            }
+          </span>
+        }
+
+        <div class="form-group">
+          <label>Teléfono</label>
+          <input formControlName="phone" />
+        </div>
+        @if (getField('phone')?.touched && getField('phone')?.invalid) {
+          <span class="error">
+            @if (getField('phone')?.errors?.['required']) {
+              El teléfono es obligatorio
+            }
+            @if (getField('phone')?.errors?.['pattern']) {
+              Debe tener 10 dígitos
+            }
+          </span>
+        }
+      </div>
+
+      <button class="save-btn" [disabled]="isSaving || form.invalid">
+        @if (isSaving) {
+          <span class="mini-spinner"></span>
+        } @else {
+          Guardar cambios
+        }
+      </button>
+    </form>
+  }
+</div>

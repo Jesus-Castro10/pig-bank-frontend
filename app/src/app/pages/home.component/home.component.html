@@ -1,59 +1,62 @@
-<!-- src/app/dashboard/home/home.component.html -->
 <div class="dashboard-container">
   <h1 class="dashboard-title">Dashboard</h1>
 
-  <div class="stats-grid">
-    <div class="stat-card">
-      <div class="stat-icon">💰</div>
-      <div class="stat-content">
-        <div class="stat-label">Saldo Disponible</div>
-        <div class="stat-value">${{ dashboardData.balance }}</div>
-      </div>
-    </div>
+  <ng-container *ngIf="(dashboardData$ | async) as dashboardData">
 
-    <div class="stat-card">
-      <div class="stat-icon">💳</div>
-      <div class="stat-content">
-        <div class="stat-label">Estado de Tarjeta</div>
-        <div class="stat-value" [class.active]="dashboardData.cardStatus === 'active'">
-          {{ dashboardData.cardStatus === 'active' ? 'Activa' : 'Inactiva' }}
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon">💰</div>
+        <div class="stat-content">
+          <div class="stat-label">Saldo Disponible</div>
+          <div class="stat-value">${{ dashboardData.balance.toLocaleString() }}</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon">💳</div>
+        <div class="stat-content">
+          <div class="stat-label">Estado de Tarjeta</div>
+          <div class="stat-value" [class.active]="dashboardData.cardStatus === 'ACTIVATED'">
+            {{ dashboardData.cardStatus === 'ACTIVATED' ? 'Activa' : 'Inactiva' }}
+          </div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon">📊</div>
+        <div class="stat-content">
+          <div class="stat-label">Transacciones este mes</div>
+          <div class="stat-value">{{ dashboardData.monthlyTransactions }}</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon">💵</div>
+        <div class="stat-content">
+          <div class="stat-label">Total Pagado</div>
+          <div class="stat-value">${{ dashboardData.monthlyTotal.toLocaleString() }}</div>
         </div>
       </div>
     </div>
 
-    <div class="stat-card">
-      <div class="stat-icon">📊</div>
-      <div class="stat-content">
-        <div class="stat-label">Transacciones este mes</div>
-        <div class="stat-value">{{ dashboardData.monthlyTransactions }}</div>
+    <div class="realtime-indicator" *ngIf="dashboardData.lastTransactionStatus">
+      <div class="indicator-label">🔄 Última actualización en tiempo real:</div>
+      <div class="indicator-value" [class]="dashboardData.lastTransactionStatus">
+        Estado: {{ dashboardData.lastTransactionStatus }}
       </div>
     </div>
 
-    <div class="stat-card">
-      <div class="stat-icon">💵</div>
-      <div class="stat-content">
-        <div class="stat-label">Total Pagado</div>
-        <div class="stat-value">${{ dashboardData.monthlyTotal }}</div>
-      </div>
-    </div>
-  </div>
-
-  <div class="realtime-indicator" *ngIf="dashboardData.lastTransactionStatus">
-    <div class="indicator-label">🔄 Última actualización en tiempo real:</div>
-    <div class="indicator-value" [class]="dashboardData.lastTransactionStatus">
-      Estado: {{ dashboardData.lastTransactionStatus }}
-    </div>
-  </div>
+  </ng-container>
 
   <div class="recent-transactions">
     <h2>Transacciones Recientes</h2>
     <div class="transactions-list">
-      <div *ngFor="let transaction of transactions.slice(0,5)" class="transaction-item">
+      <div *ngFor="let transaction of (transactions$ | async)?.slice(0,5)" class="transaction-item">
         <div class="transaction-info">
-          <div class="transaction-service">{{ transaction.serviceName }}</div>
-          <div class="transaction-date">{{ transaction.date}}</div>
+          <div class="transaction-service">{{ transaction.service.servicio }}</div>
+          <div class="transaction-date">{{ transaction.timestamp | date }}</div>
         </div>
-        <div class="transaction-amount">${{ transaction.amount }}</div>
+        <div class="transaction-amount">${{ transaction.service.precio_mensual }}</div>
         <div class="transaction-status" [class]="transaction.status">
           {{ transaction.status }}
         </div>

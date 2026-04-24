@@ -137,3 +137,146 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Añadir a catalog.component.css */
+
+/* Payment Feedback - Flotante */
+.payment-feedback {
+  position: fixed;
+  top: 80px;
+  right: 20px;
+  z-index: 1000;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  min-width: 320px;
+  max-width: 400px;
+  overflow: hidden;
+  animation: slideInRight 0.3s ease-out;
+}
+
+.payment-feedback.initial {
+  border-left: 4px solid #3B82F6;
+}
+
+.payment-feedback.in_progress {
+  border-left: 4px solid #F97316;
+}
+
+.payment-feedback.finish {
+  border-left: 4px solid #10B981;
+}
+
+.payment-feedback.failed {
+  border-left: 4px solid #EF4444;
+}
+
+.feedback-content {
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.feedback-icon {
+  font-size: 28px;
+}
+
+.feedback-message {
+  flex: 1;
+}
+
+.feedback-message strong {
+  display: block;
+  color: #0F172A;
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+.feedback-detail {
+  display: block;
+  font-size: 11px;
+  color: #64748B;
+  margin-top: 4px;
+}
+
+/* Barra de progreso */
+.progress-bar-container {
+  height: 3px;
+  background: #E2E8F0;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: #F97316;
+  transition: width 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.progress-glow {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent);
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Spinner en el botón */
+.btn-spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid white;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Responsive para mobile */
+@media (max-width: 768px) {
+  .payment-feedback {
+    top: 70px;
+    right: 10px;
+    left: 10px;
+    min-width: auto;
+    max-width: none;
+  }
+
+  .feedback-content {
+    padding: 12px;
+  }
+
+  .feedback-icon {
+    font-size: 24px;
+  }
+
+  .feedback-message strong {
+    font-size: 13px;
+  }
+}

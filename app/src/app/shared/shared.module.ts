@@ -7,9 +7,11 @@ import { SidebarComponent } from './components/sidebar/sidebar';
 import { RouterLink, RouterModule } from '@angular/router';
 import { CardsComponent } from '../pages/cards.component/cards.component';
 import { CatalogComponent } from '../pages/catalogo.component/catalogo.component';
+import { HomeComponent } from '../pages/home.component/home.component';
+import { UserProfileComponent } from '../pages/user-profile.component/user-profile.component';
 
 const EXPORTS = [CommonModule, ReactiveFormsModule, FormsModule, RouterModule];
-const DECLARATIONS = [LoginComponent, RegisterComponent,SidebarComponent, CardsComponent, CatalogComponent];
+const DECLARATIONS = [LoginComponent, RegisterComponent,SidebarComponent, CardsComponent, CatalogComponent,HomeComponent, UserProfileComponent];
 
 @NgModule({
   declarations: [...DECLARATIONS],
